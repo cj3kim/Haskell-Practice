@@ -1,28 +1,27 @@
 module LogAnalysis where
 import Log
 
-parseMessageType :: String -> MessageType
-parseMessageType xs =  case messageType of 
-                      "I" -> Info
-                      "W" -> Warning
-                      "E" -> (Error errorNumber)
-                      where wordAry = words xs 
-                            messageType = wordAry !! 0
-                            errorNumber = read (wordAry !! 1) :: Int
-
 
 parseMessage :: String -> LogMessage
-parseMessage xs =  LogMessage messageType timestamp message
-                   where wordsAry    = words xs
-                         messageType = parseMessageType xs
-                         timestamp   = case messageType of
-                                         (Error n)   -> read (wordsAry !! 2) :: Int
-                                         (Info)      -> read (wordsAry !! 1) :: Int
-                                         (Warning)   -> read (wordsAry !! 1) :: Int
-                         message     = case messageType of
-                                         (Error n)    -> wordsAry !! 3
-                                         (Info)       -> wordsAry !! 2
-                                         (Warning)    -> wordsAry !! 2
+parseMessage s = LogMessage messageType timestamp message
+                 where  wordAry       = words s
+                        firstChar     = wordAry !! 0
+                        secondChar    = wordAry !! 1
+                        messageType   = case firstChar of
+                                          "I" -> Info
+                                          "W" -> Warning
+                                          "E" -> (Error (read secondChar :: Int))
+                        timestamp     = case messageType of
+                                          (Error n) -> read (wordAry !! 2) :: Int
+                                          (Info)    -> read (wordAry !! 1) :: Int
+                                          (Warning) -> read (wordAry !! 1) :: Int
+                        message       = case messageType of
+                                          (Error n) -> unwords (drop 3 wordAry)
+                                          (Info)    -> unwords (drop 2 wordAry)
+                                          (Warning) -> unwords (drop 2 wordAry)
+
+
+{-This works but I'm not satisfied with it. Try to refactor and use take and drop.-}
 
 {-parseMessage "E 2 526 help help" == LogMessage (Error 2) 562 "help help"-}
 {-parseMessage "I 29 la la la " == LogMessage Info 29 "la la la"-}
