@@ -1,27 +1,24 @@
+{-# LANGUAGE ViewPatterns #-}
 module LogAnalysis where
 import Log
 
 
+
 parseMessage :: String -> LogMessage
-parseMessage s = LogMessage messageType timestamp message
-                 where  wordAry       = words s
-                        firstChar     = wordAry !! 0
-                        secondChar    = wordAry !! 1
-                        messageType   = case firstChar of
-                                          "I" -> Info
-                                          "W" -> Warning
-                                          "E" -> (Error (read secondChar :: Int))
-                        timestamp     = case messageType of
-                                          (Error n) -> read (wordAry !! 2) :: Int
-                                          (Info)    -> read (wordAry !! 1) :: Int
-                                          (Warning) -> read (wordAry !! 1) :: Int
-                        message       = case messageType of
-                                          (Error n) -> unwords (drop 3 wordAry)
-                                          (Info)    -> unwords (drop 2 wordAry)
-                                          (Warning) -> unwords (drop 2 wordAry)
+parseMessage (words -> (x : y : h@(z : xs))) = LogMessage messageType timestamp message
+                                               where messageType = case x of
+                                                                     "I" -> Info
+                                                                     "W" -> Warning
+                                                                     "E" -> (Error (read y :: Int))
+                                                     timestamp   = case messageType of
+                                                                     (Error n) -> read z :: Int
+                                                                     otherwise -> read y :: Int
+                                                     message     = case messageType of
+                                                                     (Error n) -> unwords xs
+                                                                     otherwise -> unwords h
 
+{-parseMessage x = Unknown "'" ++ x ++ "'" ++ " is not the log we're looking for."-}
 
-{-This works but I'm not satisfied with it. Try to refactor and use take and drop.-}
 
 {-parseMessage "E 2 526 help help" == LogMessage (Error 2) 562 "help help"-}
 {-parseMessage "I 29 la la la " == LogMessage Info 29 "la la la"-}
